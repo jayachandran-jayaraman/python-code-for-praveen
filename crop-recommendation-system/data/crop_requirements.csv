@@ -1,0 +1,6 @@
+crop,min_temp,max_temp,min_rain,max_rain,season
+Rice,20,35,1000,2500,Kharif
+Wheat,10,25,300,900,Rabi
+Maize,18,32,500,1200,Kharif
+Cotton,21,35,600,1400,Kharif
+Sugarcane,20,38,1500,3000,Kharif

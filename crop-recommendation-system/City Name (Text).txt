@@ -1,0 +1,27 @@
+City Name (Text)
+   ↓
+Latitude / Longitude (CSV)
+   ↓
+Live Weather API
+   ↓
+Temperature + Rainfall
+   ↓
+Crop Rules + ML
+   ↓
+Recommended Crop
+
+architecture
+
+Mobile App / Web UI
+        |
+        v
+   REST API (FastAPI)
+        |
+        +--> Weather Forecast Service
+        |
+        +--> Soil + Season Engine
+        |
+        +--> ML Model (Random Forest)
+        |
+        v
+   Top-3 Crop Recommendation
