@@ -8,7 +8,7 @@ rain = st.slider("Rainfall (mm)", 0, 3000, 600)
 season = st.selectbox("Season", ["Kharif", "Rabi", "Zaid"])
 
 if st.button("Recommend"):
-    URL = "https://crop-api.onrender.com/recommend"
+    URL = "http://127.0.0.1:8000/recommend"
     params = {"temp": temp, "rain": rain, "season": season}
 
     response = requests.get(URL, params=params)
