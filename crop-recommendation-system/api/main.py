@@ -1,41 +1,46 @@
 from fastapi import FastAPI, HTTPException
-import pandas as pd
+import pickle
+import numpy as np
 
 app = FastAPI()
 
+# Load model
 try:
-    crops = pd.read_csv("data/crop_requirements.csv")
+    with open("model/crop_model.pkl", "rb") as f:
+        model = pickle.load(f)
 except Exception as e:
-    raise RuntimeError(f"CSV Load Error: {e}")
+    raise RuntimeError(f"Model Load Error: {e}")
 
-@app.get("/recommend")
-def recommend(temp: float, rain: float, season: str):
+
+@app.get("/predict")
+def predict(
+    N: float,
+    P: float,
+    K: float,
+    temperature: float,
+    humidity: float,
+    ph: float,
+    rainfall: float
+):
     try:
-        season = season.lower()
-        results = []
+        input_data = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
 
-        for _, row in crops.iterrows():
-            score = 0.0
+        prediction = model.predict(input_data)[0]
+        probs = model.predict_proba(input_data)[0]
 
-            # Temperature
-            if row["min_temp"] <= temp <= row["max_temp"]:
-                score += 0.4
+        top3_idx = probs.argsort()[-3:][::-1]
+        top3 = [
+            {
+                "crop": model.classes_[i],
+                "confidence": round(float(probs[i]), 3)
+            }
+            for i in top3_idx
+        ]
 
-            # Rainfall
-            if row["min_rain"] <= rain <= row["max_rain"]:
-                score += 0.4
-
-            # Season
-            if row["season"].lower() == season:
-                score += 0.2
-
-            results.append({
-                "crop": row["crop"],
-                "score": round(score, 3)
-            })
-
-        results = sorted(results, key=lambda x: x["score"], reverse=True)
-        return results[:3]
+        return {
+            "prediction": prediction,
+            "top3": top3
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

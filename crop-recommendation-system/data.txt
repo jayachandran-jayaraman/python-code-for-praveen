@@ -1,1 +1,0 @@
-Seasonal Rainfall ≈ Daily Rainfall × 90 days

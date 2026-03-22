@@ -1,24 +1,48 @@
 import streamlit as st
 import requests
+import pandas as pd
 
-st.title("🌾 Smart Crop Recommendation")
+st.set_page_config(page_title="Smart Crop AI", layout="centered")
 
-temp = st.slider("Temperature (°C)", 10, 45, 25)
-rain = st.slider("Rainfall (mm)", 0, 3000, 600)
-season = st.selectbox("Season", ["Kharif", "Rabi", "Zaid"])
+st.title("🌾 Smart Crop Recommendation (AI Powered)")
 
-if st.button("Recommend"):
-    URL = "http://127.0.0.1:8000/recommend"
-    params = {"temp": temp, "rain": rain, "season": season}
+st.subheader("🌱 Soil & Weather Inputs")
 
-    response = requests.get(URL, params=params)
+# Inputs
+N = st.number_input("Nitrogen (N)", 0, 150, 50)
+P = st.number_input("Phosphorus (P)", 0, 150, 50)
+K = st.number_input("Potassium (K)", 0, 150, 50)
 
-    if response.status_code != 200:
-        st.error("API Error")
-        st.code(response.text)
-    else:
-        data = response.json()
-        st.success("Top 3 Recommended Crops")
+temperature = st.slider("🌡 Temperature (°C)", 10, 45, 25)
+humidity = st.slider("💧 Humidity (%)", 10, 100, 60)
+ph = st.slider("⚗️ Soil pH", 3.5, 9.0, 6.5)
+rainfall = st.slider("🌧 Rainfall (mm)", 0, 3000, 600)
 
-        for i, crop in enumerate(data, 1):
-            st.write(f"{i}. 🌱 {crop['crop']} — Score: {crop['score']}")
+# Predict
+if st.button("🚀 Predict Crop"):
+    try:
+        res = requests.get(
+            "http://127.0.0.1:8000/predict",
+            params={
+                "N": N,
+                "P": P,
+                "K": K,
+                "temperature": temperature,
+                "humidity": humidity,
+                "ph": ph,
+                "rainfall": rainfall
+            }
+        )
+
+        data = res.json()
+
+        st.success(f"🌱 Best Crop: {data['prediction']}")
+
+        st.subheader("🏆 Top 3 Recommendations")
+
+        df = pd.DataFrame(data["top3"])
+        st.bar_chart(df.set_index("crop"))
+
+    except Exception as e:
+        st.error("Server error")
+        st.code(str(e))
